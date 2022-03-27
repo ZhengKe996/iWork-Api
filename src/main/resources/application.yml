@@ -1,0 +1,95 @@
+# 配置Tomcat
+server:
+  tomcat:
+    uri-encoding: UTF-8
+    threads:
+      max: 200
+      min-spare: 30
+    connection-timeout: 5000ms
+  port: 9000
+  servlet:
+    context-path: /emos-wx-api
+
+# 配置Mysql数据源
+spring:
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: jdbc:mysql://127.0.0.1/emos?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+      username: root
+      password: root
+      initial-size: 8
+      max-active: 16
+      min-idle: 8
+      max-wait: 60000
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+
+  # 配置Redis 数据源
+  redis:
+    database: 0
+    host: 127.0.0.1
+    port: 6379
+    password: root
+    jedis:
+      pool:
+        max-active: 1000
+        max-wait: -1ms
+        max-idle: 16
+        min-idle: 8
+
+  # 配置MongoDB数据源
+  data:
+    mongodb:
+      host: 127.0.0.1
+      port: 27017
+      database: emos
+      authentication-database: admin
+      username: admin
+      password: root
+  mail:
+    default-encoding: UTF-8
+    host: smtp.163.com
+    username: email@163.com
+    password: YJOCLNIJWBVJCBEK
+
+# 配置MyBatis
+mybatis:
+  mapper-locations: classpath*:mapper/*.xml
+  type-aliases-package: top.fanzhengke.emos.db.pojo
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+
+# 配置日志输出
+logging:
+  level:
+    root: info
+    top.fanzhengke.emos.db.mapper: warn
+  pattern:
+    console: "%d{HH:mm:ss}  %-5level  %msg%n"
+
+# 定义密钥与过期时间
+emos:
+  jwt:
+    # 密钥
+    secret: twgdh
+    # 令牌过期时间(天)
+    expire: 5
+    # 令牌缓存时间(天)
+    cache-expire: 10
+  face:
+    createFaceModelUrl: http://127.0.0.1:8000/create_face_model
+    checkinUrl: http://127.0.0.1:8000/checkin
+  email:
+    system: email@163.com
+    hr: email@qq.com
+  rabbitMQ:
+    host: 127.0.0.1
+    port: 5672
+
+wx:
+  app-id: xxx
+  app-secret: xxx

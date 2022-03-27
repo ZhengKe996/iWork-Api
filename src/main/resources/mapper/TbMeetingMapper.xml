@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.fanzhengke.emos.db.mapper.TbMeetingMapper">
+    <insert id="insertMeeting" parameterType="top.fanzhengke.emos.db.pojo.TbMeeting">
+        INSERT INTO tb_meeting
+        SET uuid = #{uuid},
+        title = #{title},
+        date = #{date},
+        creator_id = #{creatorId},
+        <if test="place!=null">
+            place = #{place},
+        </if>
+        start = #{start},
+        end = #{end},
+        type = #{type},
+        members = #{members},
+        `desc` = #{desc},
+        instance_id = #{instanceId},
+        status = #{status},
+        create_time = NOW()
+    </insert>
+    <select id="searchMyMeetingListByPage" parameterType="HashMap" resultType="HashMap">
+        SELECT m.id,
+               m.uuid,
+               m.title,
+               u2.NAME,
+               m.date,
+               m.place,
+               m.START,
+               m.
+                   END
+        END
+        ,
+        m.type,
+        m.STATUS,
+        m.DESC,
+        u2.photo,
+        m.`end` - m.`start` AS HOUR
+        FROM
+        tb_meeting m
+        JOIN tb_user u1 ON JSON_CONTAINS(
+        m.members,
+        CAST( u1.id AS CHAR ))
+        JOIN tb_user u2 ON m.creator_id = u2.id
+        WHERE
+        u1.id =
+        #{userId}
+        AND
+        u1
+        .
+        STATUS
+        =
+        1
+        AND
+        u2
+        .
+        STATUS
+        =
+        1
+        AND
+        m
+        .
+        STATUS
+        IN
+        (
+        1,
+        2
+        )
+        AND
+        TIMESTAMPDIFF
+        (
+        DAY,
+        m
+        .
+        date,
+        CURRENT_DATE
+        (
+        )
+        ) <![CDATA[<=]]>
+        0
+        ORDER
+        BY
+        m
+        .
+        date,
+        m
+        .
+        START,
+        m
+        .
+        id
+        LIMIT
+        #{start},
+        #{length}
+    </select>
+    <select id="searchMeetingMembersInSameDept" parameterType="String" resultType="boolean">
+        SELECT IF(COUNT(DISTINCT u.dept_id) = 1, TRUE, FALSE) AS bool
+        FROM tb_meeting m
+                 JOIN tb_user u ON JSON_CONTAINS(m.members, CAST(u.id AS CHAR))
+        WHERE m.uuid = #{uuid}
+          AND u.status = 1
+    </select>
+    <select id="searchMeetingById" parameterType="int" resultType="HashMap">
+        SELECT m.uuid,
+               m.creator_id AS creatorId,
+               m.title,
+               u.NAME,
+               DATE_FORMAT(m.date, '%Y-%m-%d') AS date,
+	m.place,
+	m.START,
+	m.
+	END,
+	m.type,
+	m.STATUS,
+	m.DESC,
+	m.instance_id AS instanceId
+        FROM
+            tb_meeting m
+            JOIN tb_user u
+        ON m.creator_id = u.id
+        WHERE
+            m.id = #{id}
+          AND u.STATUS = 1
+
+    </select>
+    <select id="searchMeetingMembers" parameterType="int" resultType="HashMap">
+        SELECT u.id,
+               u.name,
+               u.photo
+        FROM tb_meeting m
+                 JOIN tb_user u ON JSON_CONTAINS(m.members, CAST(u.id AS CHAR))
+        WHERE m.id = #{id}
+          AND u.status = 1
+    </select>
+    <select id="searchUserMeetingInMonth" parameterType="Map" resultType="String">
+        SELECT DISTINCT
+            date
+        FROM
+            tb_meeting m
+            JOIN tb_user u ON JSON_CONTAINS(
+            m.members,
+            CAST( u.id AS CHAR ))
+        WHERE
+            u.id = #{userId}
+          AND u.STATUS = 1
+          AND m.STATUS = 1
+          AND YEAR ( m.date )= #{year}
+          AND MONTH ( m.date ) = #{month};
+    </select>
+    <select id="searchExamineMeetingList" parameterType="HashMap" resultType="HashMap">
+        SELECT m.id,
+               m.uuid,
+               m.title,
+               u2.NAME,
+               m.date,
+               m.place,
+               m.START,
+               m.
+                   END
+        END
+        ,
+        m.type,
+        m.STATUS,
+        m.DESC,
+        u2.photo,
+        m.`end` - m.`start` AS HOUR,
+        u4.id AS managerId,
+        u4.NAME AS managerName,
+	    u4.photo AS managerPhoto
+        FROM
+        tb_meeting m
+        JOIN tb_user u1 ON JSON_CONTAINS(
+        m.members,
+        CAST( u1.id AS CHAR ))
+        JOIN tb_user u2 ON m.creator_id = u2.id
+        JOIN tb_user u4 ON u1.dept_id = u4.dept_id
+        JOIN tb_role r ON JSON_CONTAINS(
+        u4.role,
+        CAST( r.id AS CHAR ))
+        WHERE
+        u1.id =
+        #{userId}
+        AND
+        u1
+        .
+        STATUS
+        =
+        1
+        AND
+        u2
+        .
+        STATUS
+        =
+        1
+        AND
+        m
+        .
+        STATUS
+        =
+        #{status}
+        AND
+        r
+        .
+        id
+        =
+        2
+        AND
+        u4
+        .
+        STATUS
+        =
+        1
+        AND
+        TIMESTAMPDIFF
+        (
+        DAY,
+        m
+        .
+        date,
+        CURRENT_DATE
+        (
+        )
+        )
+         <![CDATA[<=]]>
+        0
+        ORDER
+        BY
+        m
+        .
+        date,
+        m
+        .
+        START,
+        m
+        .
+        id
+        LIMIT
+        #{start},
+        #{length}
+
+    </select>
+    <update id="updateMeetingInstanceId" parameterType="HashMap">
+        UPDATE tb_meeting
+        SET instance_id=#{instanceId}
+        WHERE uuid = #{uuid}
+    </update>
+    <update id="updateMeetingInfo" parameterType="HashMap">
+        UPDATE tb_meeting
+        SET title = #{title},
+        date = #{date},
+        <if test="place!=null">
+            place = #{place},
+        </if>
+        <if test="place==null">
+            place = NULL,
+        </if>
+        start = #{start},
+        end = #{end},
+        type = #{type},
+        members = #{members},
+        `desc` = #{desc},
+        status=#{status}
+        WHERE id = #{id} AND status=1
+    </update>
+    <delete id="deleteMeetingById" parameterType="int">
+        DELETE
+        FROM tb_meeting
+        WHERE id = #{id}
+          AND status = 1
+    </delete>
+
+    <update id="updateExamineMeeting" parameterType="HashMap">
+        UPDATE tb_meeting
+        SET status=#{status}
+        WHERE id = #{id}
+          AND status = 3
+    </update>
+</mapper>
